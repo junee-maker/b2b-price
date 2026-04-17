@@ -110,11 +110,19 @@ window._vfb={
 let allClients=[], allProducts=[];
 
 async function init(){
+  // 8초 타임아웃
+  const timeout = setTimeout(()=>{
+    document.getElementById("loading").style.display="none";
+    document.getElementById("loginScreen").style.display="flex";
+  }, 8000);
   try{
     const [clients, products] = await Promise.all([window._vfb.loadClients(), window._vfb.loadProducts()]);
     allClients=clients||[];
     allProducts=products?products.rows||[];
-  }catch(e){ console.error(e); }
+  }catch(e){
+    console.error("로드 실패:", e);
+  }
+  clearTimeout(timeout);
   document.getElementById("loading").style.display="none";
   // URL에 클라이언트 ID가 있으면 자동 로그인 시도 (북마크 용도)
   const params=new URLSearchParams(window.location.search);
