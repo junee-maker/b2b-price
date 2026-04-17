@@ -100,120 +100,42 @@ import { getFirestore, doc, getDoc, collection, getDocs }
   from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 const cfg={apiKey:"AIzaSyCbjHxYjPKd5HqSylP5lvls1GHdcylK1XU",authDomain:"authentication-7ee4e.firebaseapp.com",projectId:"authentication-7ee4e",storageBucket:"authentication-7ee4e.firebasestorage.app",messagingSenderId:"349583834213",appId:"1:349583834213:web:9c2bf9251a87f1ef3ada8c"};
-const fbApp=initializeApp(cfg), db=getFirestore(fbApp);
 
-window._vfb={
-  loadClients: async()=>{ const s=await getDocs(collection(db,"b2bClients")); return s.docs.map(d=>({id:d.id,...d.data()})); },
-  loadProducts: async()=>{ const s=await getDoc(doc(db,"b2bData","products")); return s.exists()?s.data():null; }
-};
-
-let allClients=[], allProducts=[];
-
-async function init(){
-  // 8초 타임아웃
-  const timeout = setTimeout(()=>{
-    document.getElementById("loading").style.display="none";
-    document.getElementById("loginScreen").style.display="flex";
-  }, 8000);
-  try{
-    const [clients, products] = await Promise.all([window._vfb.loadClients(), window._vfb.loadProducts()]);
-    allClients=clients||[];
-    allProducts=products?products.rows||[];
-  }catch(e){
-    console.error("로드 실패:", e);
-  }
-  clearTimeout(timeout);
+// 3초 안에 못 불러오면 그냥 로그인 화면 표시
+const FALLBACK = setTimeout(()=>{
   document.getElementById("loading").style.display="none";
-  // URL에 클라이언트 ID가 있으면 자동 로그인 시도 (북마크 용도)
-  const params=new URLSearchParams(window.location.search);
-  const cid=params.get("c");
-  const saved=sessionStorage.getItem("b2b_client");
-  if(cid||saved){
-    const id=cid||saved;
-    const cl=allClients.find(function(c){ return c.id===id; });
-    if(cl){ sessionStorage.setItem("b2b_client",id); showApp(cl); return; }
-  }
+  document.getElementById("loginScreen").style.display="flex";
+}, 3000);
+
+try {
+  const fbApp = initializeApp(cfg);
+  const db = getFirestore(fbApp);
+
+  const [cSnap, pSnap] = await Promise.all([
+    getDocs(collection(db, "b2bClients")),
+    getDoc(doc(db, "b2bData", "products"))
+  ]);
+
+  window._allClients = cSnap.docs.map(d=>({id:d.id,...d.data()}));
+  window._allProducts = pSnap.exists() ? (pSnap.data().rows||[]) : [];
+} catch(e) {
+  console.warn("Firebase 로드 실패:", e);
+  window._allClients = [];
+  window._allProducts = [];
+}
+
+clearTimeout(FALLBACK);
+document.getElementById("loading").style.display="none";
+
+// 자동 로그인 (URL 파라미터 또는 세션)
+const cid = new URLSearchParams(window.location.search).get("c") || sessionStorage.getItem("b2b_client");
+if(cid) {
+  const cl = (window._allClients||[]).find(c=>c.id===cid);
+  if(cl){ sessionStorage.setItem("b2b_client", cid); showApp(cl); }
+  else document.getElementById("loginScreen").style.display="flex";
+} else {
   document.getElementById("loginScreen").style.display="flex";
 }
-init();
-
-window.doLogin=function(){
-  var name=(document.getElementById("inp-name").value||"").trim();
-  var pw=(document.getElementById("inp-pw").value||"").trim();
-  if(!name||!pw){ document.getElementById("loginErr").style.display="block"; return; }
-  var cl=allClients.find(function(c){ return c.name===name&&c.password===pw; });
-  if(!cl){ document.getElementById("loginErr").style.display="block"; return; }
-  sessionStorage.setItem("b2b_client",cl.id);
-  showApp(cl);
-};
-
-window.doLogout=function(){
-  sessionStorage.removeItem("b2b_client");
-  location.reload();
-};
-
-window.clearErr=function(){
-  document.getElementById("loginErr").style.display="none";
-};
-
-function showApp(cl){
-  document.getElementById("loginScreen").style.display="none";
-  document.getElementById("app").style.display="block";
-  document.getElementById("clientNameBadge").textContent=cl.name;
-  document.getElementById("pageTitle").textContent=cl.name+" 전용 가격 안내";
-  var today=new Date(), m=today.getMonth()+1, d=today.getDate();
-  document.getElementById("todayDate").textContent=today.getFullYear()+"년 "+m+"월 "+d+"일 기준";
-
-  // 업체에 배정된 제품만 필터
-  var keys=cl.productKeys||[];
-  var seen={}, products=[];
-  allProducts.forEach(function(r){
-    var key=(r.dzCode||"")+"|||"+(r.name||"");
-    if(keys.includes(key)&&!seen[key]){ seen[key]=true; products.push(r); }
-  });
-
-  if(!products.length){
-    document.getElementById("productsGrid").innerHTML='<div class="empty" style="grid-column:1/-1">아직 배정된 제품이 없습니다.<br>담당자에게 문의해주세요.</div>';
-    return;
-  }
-
-  // 제품명 기준 그룹핑 (여러 거래처 중 카드 최저가 기준으로 카드 표시)
-  var order=[], map={};
-  products.forEach(function(r){
-    var key=(r.dzCode||"")+"|||"+(r.name||"");
-    if(!map[key]){ map[key]=[]; order.push(key); }
-    map[key].push(r);
-  });
-
-  document.getElementById("productsGrid").innerHTML=order.map(function(k){
-    var grp=map[k];
-    // 카드가 최저 행 선택
-    grp.sort(function(a,b){ return (+a.cardSellEx||0)-(+b.cardSellEx||0); });
-    var rep=grp[0];
-    var cardPrice=Math.round((+(rep.cardSellEx||0))*1.1);
-    var cashPrice=Math.round((+(rep.cashSellEx||0))*1.1);
-    var stock=+(rep.stock||0);
-    var stockBadge=stock>10?'<span class="stock-badge stock-ok">재고 '+stock+'개</span>':
-                   stock>0?'<span class="stock-badge stock-low">재고 '+stock+'개 (소량)</span>':
-                   rep.stock===""?'':
-                   '<span class="stock-badge stock-none">품절</span>';
-    return '<div class="product-card">'+
-      '<div class="pc-header">'+
-        '<div class="pc-name">'+esc(rep.name||"")+'</div>'+
-        '<div class="pc-vendor">'+esc(rep.vendor||"")+'</div>'+
-      '</div>'+
-      '<div class="pc-body">'+
-        (stockBadge?'<div class="pc-stock">'+stockBadge+'</div>':'')+
-        '<div class="pc-prices">'+
-          '<div class="price-box card-box"><div class="price-box-label">카드가</div><div class="price-box-val">'+(cardPrice?cardPrice.toLocaleString("ko-KR")+"원":"미정")+'</div><div class="price-box-sub">VAT 포함</div></div>'+
-          '<div class="price-box cash-box"><div class="price-box-label">현금가</div><div class="price-box-val">'+(cashPrice?cashPrice.toLocaleString("ko-KR")+"원":"미정")+'</div><div class="price-box-sub">VAT 포함</div></div>'+
-        '</div>'+
-      '</div>'+
-    '</div>';
-  }).join("");
-}
-
-function esc(s){ return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
 </script>
 </body>
 </html>
