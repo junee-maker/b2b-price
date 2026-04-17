@@ -490,7 +490,7 @@ var B2B={
     var el=document.getElementById("clientGrid"); if(!el) return;
     var html=B2B.clients.map(function(cl){
       var pCnt=cl.productKeys?cl.productKeys.length:0;
-      var viewUrl="https://junee-maker.github.io/b2b-price/view.html?c="+encodeURIComponent(cl.id);
+      var viewUrl="https://junee-maker.github.io/b2b-price/b2b-view.html?c="+encodeURIComponent(cl.id);
       return '<div class="client-card">'+
         '<div class="client-card-header"><span class="client-name">'+B2B.esc(cl.name||"")+'</span><span class="client-badge">업체</span></div>'+
         '<div class="client-info"><b>비밀번호:</b> '+B2B.esc(cl.password||"")+'<br><b>제공 제품:</b> '+pCnt+'개<br><b>등록일:</b> '+(cl.createdAt?cl.createdAt.slice(0,10):"")+'</div>'+
