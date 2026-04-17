@@ -186,11 +186,20 @@ try {
 
 document.getElementById("loading").style.display="none";
 
-const cid = new URLSearchParams(window.location.search).get("c") || sessionStorage.getItem("b2b_client");
+// URL 파라미터로 업체명 자동 채우기 (편의용) - 비밀번호는 항상 입력 필요
+const cid = new URLSearchParams(window.location.search).get("c");
 if(cid){
   const cl = _allClients.find(c=>c.id===cid);
-  if(cl){ sessionStorage.setItem("b2b_client", cid); showApp(cl); }
-  else document.getElementById("loginScreen").style.display="flex";
+  if(cl){
+    const nameEl = document.getElementById("inp-name");
+    if(nameEl) nameEl.value = cl.name;
+  }
+}
+// 세션 로그인 유지 (같은 브라우저 세션 내에서만)
+const savedId = sessionStorage.getItem("b2b_client");
+const savedCl = savedId ? _allClients.find(c=>c.id===savedId) : null;
+if(savedCl){
+  showApp(savedCl);
 } else {
   document.getElementById("loginScreen").style.display="flex";
 }
