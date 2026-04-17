@@ -137,5 +137,70 @@ if(cid) {
   document.getElementById("loginScreen").style.display="flex";
 }
 </script>
+
+<script>
+function clearErr(){ document.getElementById("loginErr").style.display="none"; }
+
+function doLogin(){
+  var name=(document.getElementById("inp-name").value||"").trim();
+  var pw=(document.getElementById("inp-pw").value||"").trim();
+  if(!name||!pw){ document.getElementById("loginErr").style.display="block"; return; }
+  var clients=window._allClients||[];
+  var cl=clients.find(function(c){ return c.name===name&&c.password===pw; });
+  if(!cl){ document.getElementById("loginErr").style.display="block"; return; }
+  sessionStorage.setItem("b2b_client",cl.id);
+  showApp(cl);
+}
+
+function doLogout(){
+  sessionStorage.removeItem("b2b_client");
+  location.reload();
+}
+
+function showApp(cl){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("app").style.display="block";
+  document.getElementById("clientNameBadge").textContent=cl.name;
+  document.getElementById("pageTitle").textContent=cl.name+" 전용 가격 안내";
+  var today=new Date(), m=today.getMonth()+1, d=today.getDate();
+  document.getElementById("todayDate").textContent=today.getFullYear()+"년 "+m+"월 "+d+"일 기준";
+  var keys=cl.productKeys||[];
+  var seen={}, products=[];
+  (window._allProducts||[]).forEach(function(r){
+    var key=(r.dzCode||"")+"|||"+(r.name||"");
+    if(keys.includes(key)&&!seen[key]){ seen[key]=true; products.push(r); }
+  });
+  if(!products.length){
+    document.getElementById("productsGrid").innerHTML='<div class="empty" style="grid-column:1/-1">아직 배정된 제품이 없습니다.<br>담당자에게 문의해주세요.</div>';
+    return;
+  }
+  var order=[], map={};
+  products.forEach(function(r){
+    var key=(r.dzCode||"")+"|||"+(r.name||"");
+    if(!map[key]){ map[key]=[]; order.push(key); }
+    map[key].push(r);
+  });
+  document.getElementById("productsGrid").innerHTML=order.map(function(k){
+    var grp=map[k];
+    grp.sort(function(a,b){ return (+a.cardSellEx||0)-(+b.cardSellEx||0); });
+    var rep=grp[0];
+    var cardPrice=Math.round((+(rep.cardSellEx||0))*1.1);
+    var cashPrice=Math.round((+(rep.cashSellEx||0))*1.1);
+    var stock=rep.stock!==""&&rep.stock!==undefined?+(rep.stock||0):-1;
+    var stockBadge=stock<0?"":stock>10?'<span class="stock-badge stock-ok">재고 '+stock+'개</span>':stock>0?'<span class="stock-badge stock-low">재고 '+stock+'개 (소량)</span>':'<span class="stock-badge stock-none">품절</span>';
+    return '<div class="product-card">'+
+      '<div class="pc-header"><div class="pc-name">'+esc(rep.name||"")+'</div><div class="pc-vendor">'+esc(rep.vendor||"")+'</div></div>'+
+      '<div class="pc-body">'+
+        (stockBadge?'<div class="pc-stock">'+stockBadge+'</div>':'')+
+        '<div class="pc-prices">'+
+          '<div class="price-box card-box"><div class="price-box-label">카드가</div><div class="price-box-val">'+(cardPrice?cardPrice.toLocaleString("ko-KR")+"원":"미정")+'</div><div class="price-box-sub">VAT 포함</div></div>'+
+          '<div class="price-box cash-box"><div class="price-box-label">현금가</div><div class="price-box-val">'+(cashPrice?cashPrice.toLocaleString("ko-KR")+"원":"미정")+'</div><div class="price-box-sub">VAT 포함</div></div>'+
+        '</div>'+
+      '</div></div>';
+  }).join("");
+}
+
+function esc(s){ return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+</script>
 </body>
 </html>
