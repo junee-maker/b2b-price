@@ -8,7 +8,6 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;color:#1a1a2e;font-size:13px}
-/* 로그인 */
 #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh}
 .login-card{background:#fff;border-radius:16px;padding:40px 36px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.1);min-width:320px;max-width:400px;width:100%}
 .login-logo{font-size:28px;margin-bottom:8px}
@@ -16,11 +15,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;color:#1a1a2e;font
 .login-card p{font-size:12px;color:#6b7280;margin-bottom:24px}
 .login-label{font-size:11px;color:#4b5563;text-align:left;display:block;margin-bottom:4px;font-weight:500}
 .login-input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit;outline:none;color:#1a1a2e;margin-bottom:12px}
-.login-input:focus{border-color:#4359FF;box-shadow:0 0 0 3px rgba(67,89,255,.1)}
+.login-input:focus{border-color:#4359FF}
 .login-btn{width:100%;padding:11px;background:#4359FF;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px}
 .login-btn:hover{background:#3448e0}
 .login-err{font-size:12px;color:#dc2626;margin-top:8px;display:none}
-/* 앱 */
 #app{display:none;min-height:100vh}
 .app-header{background:#fff;border-bottom:1px solid #e8eaed;padding:0 24px;height:56px;display:flex;align-items:center;gap:12px}
 .app-logo{font-size:15px;font-weight:700;color:#1a1a2e}.app-logo span{color:#4359FF}
@@ -28,20 +26,17 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;color:#1a1a2e;font
 .app-space{flex:1}
 .app-date{font-size:11px;color:#9ca3af}
 .logout-link{font-size:11px;color:#9ca3af;cursor:pointer;padding:3px 8px;border:1px solid #e5e7eb;border-radius:5px}
-.logout-link:hover{color:#dc2626;border-color:#fca5a5}
-/* 메인 */
 main{max-width:1200px;margin:0 auto;padding:20px 24px}
-.page-title{font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+.page-title{font-size:18px;font-weight:700;margin-bottom:4px}
 .page-sub{font-size:12px;color:#6b7280;margin-bottom:20px}
-/* 상품 카드 그리드 */
 .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-.product-card{background:#fff;border:1px solid #e0e3e8;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);transition:box-shadow .15s}
+.product-card{background:#fff;border:1px solid #e0e3e8;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)}
 .product-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
 .pc-header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:14px 16px}
 .pc-name{font-size:13px;font-weight:700;color:#fff;line-height:1.4}
 .pc-vendor{font-size:10px;color:rgba(255,255,255,.75);margin-top:4px}
 .pc-body{padding:14px 16px}
-.pc-stock{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.pc-stock{margin-bottom:10px}
 .stock-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
 .stock-ok{background:#d1fae5;color:#065f46}
 .stock-low{background:#fef9c3;color:#854d0e}
@@ -51,21 +46,18 @@ main{max-width:1200px;margin:0 auto;padding:20px 24px}
 .price-box-label{font-size:9px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
 .price-box-val{font-size:16px;font-weight:700;color:#1a1a2e}
 .price-box-sub{font-size:10px;color:#9ca3af;margin-top:2px}
-.price-box.card-box{background:#eff6ff}
-.price-box.cash-box{background:#f0fdf4}
-.price-box.card-box .price-box-val{color:#1d4ed8}
-.price-box.cash-box .price-box-val{color:#15803d}
-/* 로딩 */
-#loading{position:fixed;inset:0;background:rgba(255,255,255,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:999;font-size:13px;color:#374151}
+.card-box{background:#eff6ff}.card-box .price-box-val{color:#1d4ed8}
+.cash-box{background:#f0fdf4}.cash-box .price-box-val{color:#15803d}
+.empty{text-align:center;padding:60px 20px;color:#9ca3af;font-size:14px}
+#loading{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:999;font-size:13px;color:#374151}
 .spinner{width:26px;height:26px;border:3px solid #e5e7eb;border-top-color:#4359FF;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:60px 20px;color:#9ca3af;font-size:14px}
 </style>
 </head>
 <body>
 <div id="loading"><div class="spinner"></div><span>불러오는 중...</span></div>
 
-<div id="loginScreen">
+<div id="loginScreen" style="display:none">
   <div class="login-card">
     <div class="login-logo">📦</div>
     <h1>디지털존 B2B</h1>
@@ -79,7 +71,7 @@ main{max-width:1200px;margin:0 auto;padding:20px 24px}
   </div>
 </div>
 
-<div id="app">
+<div id="app" style="display:none">
   <div class="app-header">
     <div class="app-logo">디지털존 <span>B2B</span></div>
     <span class="app-client" id="clientNameBadge"></span>
@@ -94,61 +86,22 @@ main{max-width:1200px;margin:0 auto;padding:20px 24px}
   </main>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getFirestore, doc, getDoc, collection, getDocs }
-  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-
-const cfg={apiKey:"AIzaSyCbjHxYjPKd5HqSylP5lvls1GHdcylK1XU",authDomain:"authentication-7ee4e.firebaseapp.com",projectId:"authentication-7ee4e",storageBucket:"authentication-7ee4e.firebasestorage.app",messagingSenderId:"349583834213",appId:"1:349583834213:web:9c2bf9251a87f1ef3ada8c"};
-
-// 3초 안에 못 불러오면 그냥 로그인 화면 표시
-const FALLBACK = setTimeout(()=>{
-  document.getElementById("loading").style.display="none";
-  document.getElementById("loginScreen").style.display="flex";
-}, 3000);
-
-try {
-  const fbApp = initializeApp(cfg);
-  const db = getFirestore(fbApp);
-
-  const [cSnap, pSnap] = await Promise.all([
-    getDocs(collection(db, "b2bClients")),
-    getDoc(doc(db, "b2bData", "products"))
-  ]);
-
-  window._allClients = cSnap.docs.map(d=>({id:d.id,...d.data()}));
-  window._allProducts = pSnap.exists() ? (pSnap.data().rows||[]) : [];
-} catch(e) {
-  console.warn("Firebase 로드 실패:", e);
-  window._allClients = [];
-  window._allProducts = [];
-}
-
-clearTimeout(FALLBACK);
-document.getElementById("loading").style.display="none";
-
-// 자동 로그인 (URL 파라미터 또는 세션)
-const cid = new URLSearchParams(window.location.search).get("c") || sessionStorage.getItem("b2b_client");
-if(cid) {
-  const cl = (window._allClients||[]).find(c=>c.id===cid);
-  if(cl){ sessionStorage.setItem("b2b_client", cid); showApp(cl); }
-  else document.getElementById("loginScreen").style.display="flex";
-} else {
-  document.getElementById("loginScreen").style.display="flex";
-}
-</script>
-
+<!-- 일반 스크립트 먼저 로드 -->
 <script>
-function clearErr(){ document.getElementById("loginErr").style.display="none"; }
+var _allClients = [];
+var _allProducts = [];
+
+function clearErr(){
+  document.getElementById("loginErr").style.display="none";
+}
 
 function doLogin(){
   var name=(document.getElementById("inp-name").value||"").trim();
   var pw=(document.getElementById("inp-pw").value||"").trim();
   if(!name||!pw){ document.getElementById("loginErr").style.display="block"; return; }
-  var clients=window._allClients||[];
-  var cl=clients.find(function(c){ return c.name===name&&c.password===pw; });
+  var cl=_allClients.find(function(c){ return c.name===name && c.password===pw; });
   if(!cl){ document.getElementById("loginErr").style.display="block"; return; }
-  sessionStorage.setItem("b2b_client",cl.id);
+  sessionStorage.setItem("b2b_client", cl.id);
   showApp(cl);
 }
 
@@ -164,30 +117,39 @@ function showApp(cl){
   document.getElementById("pageTitle").textContent=cl.name+" 전용 가격 안내";
   var today=new Date(), m=today.getMonth()+1, d=today.getDate();
   document.getElementById("todayDate").textContent=today.getFullYear()+"년 "+m+"월 "+d+"일 기준";
+
   var keys=cl.productKeys||[];
   var seen={}, products=[];
-  (window._allProducts||[]).forEach(function(r){
+  _allProducts.forEach(function(r){
     var key=(r.dzCode||"")+"|||"+(r.name||"");
-    if(keys.includes(key)&&!seen[key]){ seen[key]=true; products.push(r); }
+    if(keys.indexOf(key)>=0 && !seen[key]){ seen[key]=true; products.push(r); }
   });
+
   if(!products.length){
     document.getElementById("productsGrid").innerHTML='<div class="empty" style="grid-column:1/-1">아직 배정된 제품이 없습니다.<br>담당자에게 문의해주세요.</div>';
     return;
   }
+
   var order=[], map={};
   products.forEach(function(r){
     var key=(r.dzCode||"")+"|||"+(r.name||"");
     if(!map[key]){ map[key]=[]; order.push(key); }
     map[key].push(r);
   });
+
   document.getElementById("productsGrid").innerHTML=order.map(function(k){
     var grp=map[k];
     grp.sort(function(a,b){ return (+a.cardSellEx||0)-(+b.cardSellEx||0); });
     var rep=grp[0];
     var cardPrice=Math.round((+(rep.cardSellEx||0))*1.1);
     var cashPrice=Math.round((+(rep.cashSellEx||0))*1.1);
-    var stock=rep.stock!==""&&rep.stock!==undefined?+(rep.stock||0):-1;
-    var stockBadge=stock<0?"":stock>10?'<span class="stock-badge stock-ok">재고 '+stock+'개</span>':stock>0?'<span class="stock-badge stock-low">재고 '+stock+'개 (소량)</span>':'<span class="stock-badge stock-none">품절</span>';
+    var st=rep.stock;
+    var stockBadge="";
+    if(st!==""&&st!==undefined&&st!==null){
+      var n=+st;
+      stockBadge=n>10?'<span class="stock-badge stock-ok">재고 '+n+'개</span>':n>0?'<span class="stock-badge stock-low">재고 '+n+'개 (소량)</span>':'<span class="stock-badge stock-none">품절</span>';
+    }
+    function esc(s){ return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
     return '<div class="product-card">'+
       '<div class="pc-header"><div class="pc-name">'+esc(rep.name||"")+'</div><div class="pc-vendor">'+esc(rep.vendor||"")+'</div></div>'+
       '<div class="pc-body">'+
@@ -199,8 +161,39 @@ function showApp(cl){
       '</div></div>';
   }).join("");
 }
+</script>
 
-function esc(s){ return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+<!-- Firebase ESM 나중에 로드 -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getFirestore, doc, getDoc, collection, getDocs }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+const cfg={apiKey:"AIzaSyCbjHxYjPKd5HqSylP5lvls1GHdcylK1XU",authDomain:"authentication-7ee4e.firebaseapp.com",projectId:"authentication-7ee4e",storageBucket:"authentication-7ee4e.firebasestorage.app",messagingSenderId:"349583834213",appId:"1:349583834213:web:9c2bf9251a87f1ef3ada8c"};
+
+try {
+  const fbApp = initializeApp(cfg);
+  const db = getFirestore(fbApp);
+  const [cSnap, pSnap] = await Promise.all([
+    getDocs(collection(db,"b2bClients")),
+    getDoc(doc(db,"b2bData","products"))
+  ]);
+  _allClients = cSnap.docs.map(d=>({id:d.id,...d.data()}));
+  _allProducts = pSnap.exists() ? (pSnap.data().rows||[]) : [];
+} catch(e) {
+  console.warn("로드 실패:", e);
+}
+
+document.getElementById("loading").style.display="none";
+
+const cid = new URLSearchParams(window.location.search).get("c") || sessionStorage.getItem("b2b_client");
+if(cid){
+  const cl = _allClients.find(c=>c.id===cid);
+  if(cl){ sessionStorage.setItem("b2b_client", cid); showApp(cl); }
+  else document.getElementById("loginScreen").style.display="flex";
+} else {
+  document.getElementById("loginScreen").style.display="flex";
+}
 </script>
 </body>
 </html>
