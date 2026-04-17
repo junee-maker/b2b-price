@@ -48,7 +48,7 @@ header{flex-shrink:0;background:#fff;border-bottom:1px solid #e8eaed;padding:0 2
 .search-wrap input{width:100%;padding:8px 12px 8px 32px;border:1px solid #d1d5db;border-radius:7px;font-size:12px;font-family:inherit;outline:none;color:#1a1a2e}
 .search-wrap input:focus{border-color:#4359FF}
 .s-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:#9ca3af;fill:none;pointer-events:none}
-.search-results{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:260px;overflow-y:auto;display:none}
+.search-results{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:320px;overflow-y:auto;display:none}
 .sr-item{padding:8px 12px;cursor:pointer;border-bottom:1px solid #f3f4f6;font-size:12px}
 .sr-item:last-child{border-bottom:none}
 .sr-item:hover{background:#f0f4ff}
@@ -123,6 +123,15 @@ tr.best-price td:first-child{border-left:3px solid #10b981}
 #loading{position:fixed;inset:0;background:rgba(255,255,255,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:999;font-size:13px;color:#374151}
 .spinner{width:26px;height:26px;border:3px solid #e5e7eb;border-top-color:#4359FF;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.sr-item{padding:8px 12px;cursor:pointer;border-bottom:1px solid #f3f4f6;font-size:12px;display:flex;align-items:center;gap:8px}
+.sr-item:last-child{border-bottom:none}
+.sr-item:hover{background:#f0f4ff}
+.sr-item input[type=checkbox]{accent-color:#4359FF;cursor:pointer;width:14px;height:14px;flex-shrink:0}
+.sr-item-info{flex:1}
+.sr-name{font-weight:500;color:#1a1a2e}
+.sr-sub{font-size:10px;color:#6b7280;margin-top:2px}
+.sr-footer{padding:8px 12px;border-top:2px solid #e5e7eb;display:flex;align-items:center;gap:8px;background:#f9fafb;position:sticky;bottom:0}
+.sr-sel-count{font-size:11px;color:#4b5563;flex:1}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;font-size:12px;padding:8px 18px;border-radius:8px;display:none;z-index:999}
 </style>
 </head>
@@ -277,16 +286,55 @@ var B2B = {
 
     if(!matched.length){ res.innerHTML='<div style="padding:10px;font-size:12px;color:#9ca3af">검색 결과 없음</div>'; res.style.display="block"; return; }
 
-    res.innerHTML = matched.slice(0,12).map(function(r){
-      return '<div class="sr-item" data-dz="'+B2B.esc(r.dzCode||"")+'" data-nm="'+B2B.esc(r.name||"")+'">' +
-        '<div class="sr-name">'+B2B.esc(r.name||"")+'</div>' +
-        '<div class="sr-sub">'+B2B.esc(r.vendor||"")+(r.buyEx?" · 매입 "+Number(r.buyEx).toLocaleString("ko-KR")+"원":"")+'</div>' +
-        '</div>';
-    }).join("");
-    res.querySelectorAll(".sr-item").forEach(function(el){
-      el.onmousedown = function(){ B2B.addProduct(this.dataset.dz, this.dataset.nm); };
-    });
+    var items = matched.slice(0,20);
+    res.innerHTML =
+      items.map(function(r){
+        var key=B2B.esc((r.dzCode||"")+"|||"+(r.name||""));
+        var alreadyAdded = B2B.rows.some(function(row){ return row.dzCode===r.dzCode && row.name===r.name; });
+        return '<label class="sr-item">' +
+          '<input type="checkbox" class="sr-cb" data-dz="'+B2B.esc(r.dzCode||"")+'" data-nm="'+B2B.esc(r.name||"")+'" '+(alreadyAdded?"checked disabled":"")+' onchange="B2B.updateSelCount()">' +
+          '<div class="sr-item-info">' +
+            '<div class="sr-name">'+B2B.esc(r.name||"")+(alreadyAdded?' <span style="font-size:9px;background:#e0f2fe;color:#0369a1;border-radius:3px;padding:1px 5px;vertical-align:middle">추가됨</span>':'')+'</div>' +
+            '<div class="sr-sub">'+B2B.esc(r.vendor||"")+(r.buyEx?" · 매입 "+Number(r.buyEx).toLocaleString("ko-KR")+"원":"")+'</div>' +
+          '</div>' +
+        '</label>';
+      }).join("") +
+      '<div class="sr-footer">' +
+        '<span class="sr-sel-count" id="srSelCount">0개 선택</span>' +
+        '<button class="btn" style="font-size:11px;padding:3px 8px" onclick="B2B.selectAllResults()">전체 선택</button>' +
+        '<button class="btn btn-primary" style="font-size:11px;padding:3px 10px" onmousedown="B2B.addSelectedProducts()">추가</button>' +
+      '</div>';
     res.style.display="block";
+    B2B.updateSelCount();
+  },
+
+  updateSelCount: function(){
+    var cbs = document.querySelectorAll(".sr-cb:checked:not(:disabled)");
+    var el = document.getElementById("srSelCount");
+    if(el) el.textContent = cbs.length+"개 선택";
+  },
+
+  selectAllResults: function(){
+    document.querySelectorAll(".sr-cb:not(:disabled)").forEach(function(cb){ cb.checked=true; });
+    B2B.updateSelCount();
+  },
+
+  addSelectedProducts: function(){
+    var checked = document.querySelectorAll(".sr-cb:checked:not(:disabled)");
+    if(!checked.length){ B2B.toast("제품을 선택해주세요"); return; }
+    var added=0;
+    checked.forEach(function(cb){
+      var dzCode=cb.dataset.dz, name=cb.dataset.nm;
+      var candidates=B2B._priceRows.filter(function(r){ return r.dzCode===dzCode && r.name===name; });
+      candidates.forEach(function(r){
+        B2B.rows.push({id:B2B.nid(),vendor:r.vendor||"",dzCode:r.dzCode||"",erpCode:r.erpCode||"",name:r.name||"",cycle:r.cycle||"",buyEx:r.buyEx||"",cardSellEx:r.cardSellEx||"",cashSellEx:r.cashSellEx||""});
+      });
+      added++;
+    });
+    B2B.render();
+    document.getElementById("addResults").style.display="none";
+    document.getElementById("addSearch").value="";
+    B2B.toast(added+"개 제품이 추가되었습니다");
   },
 
   addProduct: function(dzCode, name){
